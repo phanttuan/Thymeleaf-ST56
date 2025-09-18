@@ -4,15 +4,18 @@
 <head>
 <meta charset="UTF-8">
 <title>Insert title here</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+	integrity="sha512-SfZ6zP1p76Rj0KfWvO+1n1JZEx7H+9l0mVx1x0O3s3Q3wN8YJmXgJw2yXv8xv6+9YyGzQw6mT9Hq9Pl6B5x5mA=="
+	crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
 	<header class="row">
 		<div class="col">
 			<div th:replace="~{admin/fragments/header::header}"></div>
 		</div>
-		<span th:text="#{iotstar.message.hello}"></span> <a
-			href="?language=en">English</a> <a href="?language=vi_VN">Viet
-			Nam</a>
+		<span th:text="#{iotstar.message.hello}"></span>
+		<a th:href="@{?language=en}">English</a>
+		<a th:href="@{?language=vi_VN}">Viet Nam</a>
 	</header>
 	<main class="container">
 		<!-- <nav class = "row">

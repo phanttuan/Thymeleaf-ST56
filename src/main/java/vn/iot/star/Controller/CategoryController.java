@@ -24,6 +24,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import jakarta.validation.Valid;
 import vn.iot.star.Entity.CategoryEntity;
+import vn.iot.star.Model.CategoryModel;
+import vn.iot.star.Service.ICategoryService;
 
 @Controller
 @RequestMapping("admin/categories")
@@ -36,16 +38,14 @@ public class CategoryController {
 		CategoryModel cateModel = new CategoryModel();
 		cateModel.setIsEdit(false);
 		model.addAttribute("category", cateModel);
-		return "/admin/categories/addOrEdit";
+		return "admin/categories/addOrEdit";
 	}
-
-}
 
 	@PostMapping("saveOrUpdate")
 	public ModelAndView saveOrUpdate(ModelMap model, @Valid @ModelAttribute("category") CategoryModel cateModel,
 			BindingResult result) {
 		if (result.hasErrors()) {
-			return new ModelAndView("/admin/categories/addOrEdit");
+			return new ModelAndView("admin/categories/addOrEdit");
 		}
 		CategoryEntity entity = new CategoryEntity();
 		BeanUtils.copyProperties(cateModel, entity);
@@ -58,7 +58,6 @@ public class CategoryController {
 		}
 		model.addAttribute("message", message);
 		return new ModelAndView("forward:/admin/categories/searchpaginated", model);
-
 	}
 
 	@RequestMapping("")
@@ -77,7 +76,7 @@ public class CategoryController {
 			BeanUtils.copyProperties(entity, cateModel);
 			cateModel.setIsEdit(true);
 			model.addAttribute("category", cateModel);
-			return new ModelAndView("/admin/categories/addOrEdit", model);
+			return new ModelAndView("admin/categories/addOrEdit", model);
 		}
 		model.addAttribute("message", "Category is not existed!!!");
 		return new ModelAndView("forward:/admin/categories", model);
@@ -91,7 +90,7 @@ public class CategoryController {
 	}
 
 	@GetMapping("search")
-	public String search(ModelMap model , @RequestParam(name="name", required = false)) {
+	public String search(ModelMap model , @RequestParam(name="name", required = false) String name) {
 		List<CategoryEntity> list = null;
 		if(StringUtils.hasText(name)) {
 			list = categoryService.findByNameContaining(name);
@@ -103,7 +102,7 @@ public class CategoryController {
 	}
 
 	@RequestMapping("searchpaginated")
-	public String search(ModelMap model, @RequestParam(name = "name", required = false) String name,
+	public String searchPaginated(ModelMap model, @RequestParam(name = "name", required = false) String name,
 			@RequestParam("page") Optional<Integer> page, @RequestParam("size") Optional<Integer> size) {
 		int count = (int) categoryService.count();
 		int currentPage = page.orElse(1);
@@ -126,7 +125,7 @@ public class CategoryController {
 				else if (start == 1)
 					end = start + count;
 			}
-			List<Integer> pageNumbers = IntStream.rangeClosed(start, end).boxed().collect(Collectors.toList());
+			List<Integer> pageNumbers = IntStream.rangeClosed(start, end).boxed().toList();
 			model.addAttribute("pageNumbers", pageNumbers);
 		}
 		model.addAttribute("categoryPage", resultPage);
