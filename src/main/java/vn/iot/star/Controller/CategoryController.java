@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import jakarta.validation.Valid;
-import vn.iot.star.Entity.CategoryEntity;
+import vn.iot.star.Entity.Category;
 import vn.iot.star.Model.CategoryModel;
 import vn.iot.star.Service.ICategoryService;
 
@@ -47,8 +47,10 @@ public class CategoryController {
 		if (result.hasErrors()) {
 			return new ModelAndView("admin/categories/addOrEdit");
 		}
-		CategoryEntity entity = new CategoryEntity();
+		Category entity = new Category();
 		BeanUtils.copyProperties(cateModel, entity);
+		// Explicitly map differing property names (name -> categoryName)
+		entity.setCategoryName(cateModel.getName());
 		categoryService.save(entity);
 		String message = "";
 		if (cateModel.getIsEdit() == true) {
@@ -62,18 +64,20 @@ public class CategoryController {
 
 	@RequestMapping("")
 	public String list(ModelMap model) {
-		List<CategoryEntity> list = categoryService.findAll();
+		List<Category> list = categoryService.findAll();
 		model.addAttribute("categories", list);
 		return "admin/categories/list";
 	}
 
 	@GetMapping("edit/{categoryId}")
 	public ModelAndView edit(ModelMap model, @PathVariable("categoryId") Long categoryId) {
-		Optional<CategoryEntity> optCategory = categoryService.findById(categoryId);
+		Optional<Category> optCategory = categoryService.findById(categoryId);
 		CategoryModel cateModel = new CategoryModel();
 		if (optCategory.isPresent()) {
-			CategoryEntity entity = optCategory.get();
+			Category entity = optCategory.get();
 			BeanUtils.copyProperties(entity, cateModel);
+			// Manually map differing property name
+			cateModel.setName(entity.getCategoryName());
 			cateModel.setIsEdit(true);
 			model.addAttribute("category", cateModel);
 			return new ModelAndView("admin/categories/addOrEdit", model);
@@ -91,9 +95,9 @@ public class CategoryController {
 
 	@GetMapping("search")
 	public String search(ModelMap model , @RequestParam(name="name", required = false) String name) {
-		List<CategoryEntity> list = null;
+		List<Category> list = null;
 		if(StringUtils.hasText(name)) {
-			list = categoryService.findByNameContaining(name);
+			list = categoryService.findByCategoryNameContaining(name);
 		}else {
 			list = categoryService.findAll();
 		}
@@ -107,10 +111,10 @@ public class CategoryController {
 		int count = (int) categoryService.count();
 		int currentPage = page.orElse(1);
 		int pageSize = size.orElse(3);
-		Pageable pageable = PageRequest.of(currentPage - 1, pageSize, Sort.by("name"));
-		Page<CategoryEntity> resultPage = null;
+		Pageable pageable = PageRequest.of(currentPage - 1, pageSize, Sort.by("categoryName"));
+		Page<Category> resultPage = null;
 		if (StringUtils.hasText(name)) {
-			resultPage = categoryService.findByNameContaining(name, pageable);
+			resultPage = categoryService.findByCategoryNameContaining(name, pageable);
 			model.addAttribute("name", name);
 		} else {
 			resultPage = categoryService.findAll(pageable);
